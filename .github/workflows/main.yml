@@ -3,17 +3,26 @@ name: Build Test and Run
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-    name: Build
     runs-on: self-hosted
     steps:
-
-    - name: Set up 
-
-    - name: Check out code into the directory
-    
-    - name: Run Build
+    - name: Set up
+    - uses: actions/checkout@v2
+    - name: Set up Python in a virtual env
       run: |
-        make build
+        if [[ `uname` != "Darwin" ]]; then sudo apt -y install python3-venv; fi
+        python3 -m venv .env
+    - name: Install dependencies
+      run: |
+        source .env/bin/activate
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Test with pytest
+      run: |
+        source .env/bin/activate
+        pytest
