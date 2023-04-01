@@ -1,0 +1,73 @@
+{
+    "serviceVariantId": 7408,
+    "serviceVariantName": "Pediatra - gabinet dzieci zdrowych",
+    "facilityId": 44,
+    "facilityName": "LX Warszawa - KEN 93",
+    "roomId": 8365,
+    "scheduleId": 8913494,
+    "date": "2022-12-15T08:40:00.000Z",
+    "timeFrom": "09:40",
+    "timeTo": "10:00",
+    "doctorId": 16559,
+    "doctor": {
+      "id": 16559,
+      "academicTitle": "lek. med.",
+      "firstName": "ANNA",
+      "lastName": "NIEBIESZCZAŃSKA"
+    },
+    "isAdditional": false,
+    "isImpediment": false,
+    "impedimentText": "",
+    "isPreparationRequired": true,
+    "preparationItems": [
+      {
+        "header": null,
+        "text": "<div><font size=\"3\" color=\"FF0000\"><span>Jeżeli potrzebujesz wizyty dla dziecka chorego zapraszamy w pierwszej kolejności do umówienia porady telemedycznej. \nKonsultacja pediatryczna dzieci zdrowe, przeznaczona jest wyłącznie dla dzieci zdrowych. \n\n</span></font><br/></div><div><br/></div><div><font size=\"3\">Każda osoba w wieku od 0 do 19 roku życia poddawana szczepieniom ochronnym zarówno\nobowiązkowym jak i zalecanym powinna przedstawić w chwili szczepienia 2 dokumenty tj.:\nKartę Uodpornienia (która jest wystawiana przy pierwszym szczepieniu przez\nośrodek/szpital w chwili urodzenia pacjenta) \nKsiążeczkę Zdrowia Dziecka lub Książeczkę Szczepień.</font></div><div><br/></div><font size=\"3\" color=\"FF0000\">Uwaga!!<br/><span></span><span>Po szczepieniu Pacjent jest zobligowany do pozostania na terenie <font color=\"FF0000\">Centrum Medycznego minimum </font>15 minut pod opieką personelu medycznego w celach bezpieczeństwa.</span></font>"
+      }
+    ],
+    "referralId": null,
+    "eReferralId": null,
+    "referralTypeId": null,
+    "parentReservationId": null,
+    "correlationId": "983952d3-7cf1-4623-91ce-2f731ae6bd34",
+    "isTelemedicine": false
+  }
+
+  Response:
+  {
+    "value": {
+      "isStomatology": false,
+      "temporaryReservationId": 439697944,
+      "relatedVisits": [],
+      "valuations": [
+        {
+          "payerId": 328751,
+          "contractId": 457078,
+          "productInContractId": 839200,
+          "productId": 89743,
+          "productElementId": 11061532,
+          "requireReferralForPP": false,
+          "valuationType": 1,
+          "price": 0,
+          "isReferralRequired": false,
+          "isExternalReferralAllowed": false,
+          "alternativePrice": null
+        }
+      ],
+      "conflictedVisit": null,
+      "changeTermAvailable": false,
+      "askForReferral": false,
+      "doctorDetails": {
+        "id": 16559,
+        "genderId": 1,
+        "academicTitle": "lek. med.",
+        "firstName": "ANNA",
+        "lastName": "NIEBIESZCZAŃSKA"
+      },
+      "isBloodExamination": false
+    },
+    "errors": [],
+    "warnings": [],
+    "hasErrors": false,
+    "hasWarnings": false
+  }
