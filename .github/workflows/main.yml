@@ -1,0 +1,19 @@
+name: Build Test and Run
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build
+    runs-on: self-hosted
+    steps:
+
+    - name: Set up 
+
+    - name: Check out code into the directory
+    
+    - name: Run Build
+      run: |
+        make build
