@@ -1,13 +1,17 @@
-name: Build Test and Run
+name: CI
 
-on: [workflow_dispatch]
-
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
+
   build:
     runs-on: self-hosted
     steps:
-    - name: Set up
     - uses: actions/checkout@v2
     - name: Set up Python in a virtual env
       run: |
@@ -23,3 +27,10 @@ jobs:
       run: |
         source .env/bin/activate
         pytest
+
+  publish:
+    runs-on: self-hosted
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo Publish
