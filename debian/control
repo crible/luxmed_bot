@@ -2,12 +2,12 @@ Source: luxmed
 Section: python
 Priority: extra
 Maintainer: Alexey Tulia
-Build-Depends: debhelper (>= 9), python3.7, dh-virtualenv (>= 0.8)
+Build-Depends: debhelper (>= 9), python3.9, dh-virtualenv (>= 0.8)
 Standards-Version: 3.9.5
 
-Package: luxmed-bot
+Package: luxmed
 Architecture: any
-Pre-Depends: dpkg (>= 1.16.1), python3.7, ${misc:Pre-Depends}
+Pre-Depends: dpkg (>= 1.16.1), python3.9, ${misc:Pre-Depends}
 Depends: ${misc:Depends}
 Description: Luxmed API client and Tekegram bot
  Useful for booking an appointment for doctors.
