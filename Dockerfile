@@ -1,7 +1,8 @@
 FROM python:3.9
 
 ADD *.py .
+ADD requirements.txt
 
-pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
-CMD [“python”, “./luxmedbot.py”] 
+CMD ["python", "./luxmedbot.py"] 

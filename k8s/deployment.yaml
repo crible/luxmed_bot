@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: luxmed-bot-svc
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: luxxmed-bot-svc
+  template:
+    metadata:
+      labels:
+        app: luxmed-bot-svc
+    spec:
+      containers:
+      - image: python-imagename
+        name: luxmxed-bot-svc
+        ports:
+        - containerPort: 8443

@@ -1,5 +1,6 @@
 import random
 import uuid
+import os
 from datetime import datetime
 from enum import Enum
 import utils
@@ -9,8 +10,8 @@ import requests
 import config_loader
 
 PROXY = { 
-    'https' : 'http://user-name:pass@pl.smartproxy.com:20000',
-    'http' : 'http://user-name:pass@pl.smartproxy.com:20000' 
+    'https' : "http://" + os.getenv('PROXY_USER') + ":" + os.getenv("PROXY_PASS") + "@pl.smartproxy.com:20000",
+    'http' : "http://" + os.getenv('PROXY_USER') + ":" + os.getenv("PROXY_PASS") + "@pl.smartproxy.com:20000",
 } 
 
 

@@ -3,6 +3,7 @@
 
 import logging
 from datetime import timedelta, date
+from dotenv import load_dotenv
 from luxmed_api import Language
 from utils import resolve_visit
 import booking_service
@@ -48,9 +49,9 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-PORT = int(os.environ.get('PORT', 8443))
+load_dotenv()
 
-TOKEN = ""
+PORT = int(os.environ.get('PORT', 8443))
 
 KID, CLINIC, SICK_OR_HEALTHY = range(3)
 
@@ -209,7 +210,7 @@ def cancel(update: Update, context: CallbackContext) -> int:
 
 def main() -> None:
     # Create the Updater and pass it your bot's token.
-    updater = Updater(TOKEN)
+    updater = Updater(os.getenv("TG_TOKEN"))
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(
