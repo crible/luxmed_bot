@@ -14,7 +14,7 @@ spec:
         app: luxmed-bot-svc
     spec:
       containers:
-      - image: python-imagename
+      - image: luxmed:local
         name: luxmed-bot-svc
         imagePullPolicy: Never
         ports:
