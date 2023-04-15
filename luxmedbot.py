@@ -237,7 +237,7 @@ def main() -> None:
 
     # updater.bot.setWebhook()
     ### 
-    # updater.idle()
+    updater.idle()
 
 
 if __name__ == '__main__':
