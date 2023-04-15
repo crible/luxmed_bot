@@ -17,5 +17,31 @@ spec:
       - image: luxmed:local
         name: luxmed-bot-svc
         imagePullPolicy: Never
+        env:
+        - name: TG_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: tg-token
+              key: tg-token
+        - name: PROXY_USER
+          valueFrom:
+            secretKeyRef:
+              name: proxy-user
+              key: proxy-user
+        - name: PROXY_PASS
+          valueFrom:
+            secretKeyRef:
+              name: proxy-pass
+              key: proxy-pass
+        - name: DZIANIS_USER
+          valueFrom:
+            secretKeyRef:
+              name: dzianis-user
+              key: dzianis-user
+        - name: DZIANIS_PASS
+          valueFrom:
+            secretKeyRef:
+              name: dzianis-pass
+              key: dzianis-pass
         ports:
         - containerPort: 8443

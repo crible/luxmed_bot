@@ -5,4 +5,6 @@ ADD requirements.txt .
 
 RUN pip install -r requirements.txt
 
+EXPOSE 8443
+
 CMD ["python", "./luxmedbot.py"] 
