@@ -228,14 +228,14 @@ def main() -> None:
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(CommandHandler('cancel', cancel))
 
-    updater.start_polling()
+    #updater.start_polling()
     # Start the Bot
-    #updater.start_webhook(listen="0.0.0.0",
-                        #   port=int(PORT),
-                        #   url_path=TOKEN,
-                        #   webhook_url="https://still-eyrie-57409.herokuapp.com/" + TOKEN)
+    updater.start_webhook(listen="0.0.0.0",
+                           port=int(PORT),
+                           url_path=os.getenv("TG_TOKEN"),
+                           webhook_url="https://rpitulia.ddns.net:8443/" + os.getenv("TG_TOKEN"))
 
-    #updater.bot.setWebhook()
+    updater.bot.setWebhook()
     ### 
     updater.idle()
 
