@@ -7,7 +7,7 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: luxxmed-bot-svc
+      app: luxmed-bot-svc
   template:
     metadata:
       labels:
@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - image: python-imagename
-        name: luxmxed-bot-svc
+        name: luxmed-bot-svc
         ports:
         - containerPort: 8443
