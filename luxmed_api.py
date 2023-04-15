@@ -7,7 +7,6 @@ import utils
 import json
 import requests
 
-import config_loader
 
 PROXY = { 
     'https' : "http://" + os.getenv('PROXY_USER') + ":" + os.getenv("PROXY_PASS") + "@pl.smartproxy.com:20000",
@@ -215,10 +214,10 @@ def __get_access_token(user) -> str:
                "User-Agent": "okhttp/3.11.0",
                "Custom-User-Agent": __CUSTOM_USER_AGENT}
 
-    __CONFIG = config_loader.read_configuration(user, ["username", "password", "language"])
+    # __CONFIG = config_loader.read_configuration(user, ["username", "password", "language"])
 
-    authentication_body = {"username": __CONFIG["username"],
-                           "password": __CONFIG["password"],
+    authentication_body = {"username": os.getenv("DZIANIS_USER"),
+                           "password": os.getenv("DZIANIS_PASS"),
                            "grant_type": "password",
                            "account_id": str(uuid.uuid4())[:35],
                            "client_id": str(uuid.uuid4())
