@@ -16,5 +16,6 @@ spec:
       containers:
       - image: python-imagename
         name: luxmed-bot-svc
+        imagePullPolicy: Never
         ports:
         - containerPort: 8443
