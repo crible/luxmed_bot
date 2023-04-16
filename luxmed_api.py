@@ -1,11 +1,15 @@
 import random
 import uuid
 import os
+from dotenv import load_dotenv
 from datetime import datetime
 from enum import Enum
 import utils
 import json
 import requests
+
+
+load_dotenv()
 
 
 PROXY = { 

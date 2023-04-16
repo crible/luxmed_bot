@@ -8,26 +8,25 @@ from luxmed_api import Language
 from utils import resolve_visit
 import booking_service
 import os
+from uuid import uuid4
 
 # === BACKLOG ===
 # Add all Clinics or Klimczaka only
-# Add stomatolog
-# Add noip.net or ddns support
-# Add code for Gajmed
-# Remove config file code
-# Choose sleep time for kids to ignore
+# Add finding closest clinic by GPS
 # Add confirmation for reservation start
-# Integrate with arduino
-# Package for Debian and autostart
-# Add buttons for how much days to look for ahead
+# Add stomatolog service
+# Doctors blacklist/whitelist
 # Make buttons inline with emojis
 # Add exception handling for Luxmed API and HTTP proxy
+
+# Add support for websockets
+
+# Choose sleep time for kids to ignore
 # Add release temp reservation in case of error (transaction like)
 # Add random timeouts in given range
 # Add one session support
 # Add proper Request/Response objects mapping
-# Get rid of config loader module
-# Doctos blacklist
+
 # If first book in available terms failed - book next one
 # Add time range selector for booking
 
@@ -39,8 +38,10 @@ from telegram.ext import (
     MessageHandler,
     Filters,
     ConversationHandler,
+    CallbackQueryHandler,
     CallbackContext,
 )
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 # Enable logging
 logging.basicConfig(
@@ -49,11 +50,21 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-load_dotenv()
+
+# Define emoji codes
+CHECK_MARK = u"\U00002705"  # Green check mark emoji
+CROSS_MARK = u"\U0000274C"  # Red cross mark emoji
+
+# Define doctor whitelist that we trust
+DOCTOR_WHITELIST = {41195:'Olga Marczuk'}
+
+CLINICS = {2259: 'Klimczaka', 0: 'Closest available', 1:'All in Warsaw'}
+
+SERVICES = {8914: 'Stomatolog dzieci', 7408: 'Pediatr healthy', 7409: 'Pediatr sick'}
 
 PORT = int(os.environ.get('PORT', 8443))
 
-KID, CLINIC, SICK_OR_HEALTHY = range(3)
+KID, CLINIC, SICK_OR_HEALTHY, CONFIRMATION = range(4)
 
 def monitor(context: CallbackContext) -> None:
     """Send the alarm message."""
@@ -70,14 +81,7 @@ def monitor(context: CallbackContext) -> None:
     parsed_language = Language.POLISH
 
     parsed_visit = resolve_visit(context.job.context.user_data['visit'])
-    
-    ## 2259 - Klimczaka
-    ## 44 - KEN93
-    # serviceVariant 8914 -Stomatolog Dzieci
-    # dooctorsIds = 41195 Olga Marczuk
-    # city id - 1 - warszawa
-    # id":7408 Paediatrician consultation - for healthy children
-    # id":7409 Paediatrician consultation - for sick children"
+
     
     logger.info("Checking available terms for luxmed user %s, visit type: %s", user, parsed_visit)
     available_terms = booking_service.get_available_terms(user, 1, parsed_visit, parsed_from_date,
@@ -135,18 +139,10 @@ def unset(update: Update, context: CallbackContext) -> None:
 
 def start(update: Update, context: CallbackContext) -> int:
     """Starts the conversation and asks the user."""
-    reply_keyboard = [['Kiryl', 'Dzianis']]
-
-    user = update.message.from_user
-    logger.info("User %s started the booking process.", user.first_name)
-
-    update.message.reply_text(
-        'Hi! Please choose a kid to search free visits.'
-        'Send /cancel to stop talking to me.\n\n',
-        reply_markup=ReplyKeyboardMarkup(
-            reply_keyboard, one_time_keyboard=True, input_field_placeholder='Kiryl or Dzianis?'
-        ),
-    )
+    keyboard = [[InlineKeyboardButton("Dzianis", callback_data='kid_Dzianis'),
+                 InlineKeyboardButton("Kiryl", callback_data='kid_Kiryl')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text('Hi! Who is your kid?', reply_markup=reply_markup)
     return KID
 
 
@@ -207,20 +203,40 @@ def cancel(update: Update, context: CallbackContext) -> int:
 
     return ConversationHandler.END
 
+def confirmation():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(f"{CHECK_MARK} Yes", callback_data='confirm'),
+         InlineKeyboardButton(f"{CROSS_MARK} No", callback_data='cancel')]
+    ])
+
+def confirm(update, context):
+    query = update.callback_query
+    if query.data == 'confirm':
+        query.answer()
+        query.edit_message_text(f"{CHECK_MARK} Great! Your kid {context.user_data['kid']} will have an appointment soon.")
+        return ConversationHandler.END
+    elif query.data == 'cancel':
+        query.answer()
+        query.edit_message_text("Oops, let's start again. What is your kid's name?")
+        return KID
+
 
 def main() -> None:
     # Create the Updater and pass it your bot's token.
+    load_dotenv()
+
     updater = Updater(os.getenv("TG_TOKEN"))
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
-            KID: [MessageHandler(Filters.regex('^(Kiryl|Dzianis)$'), kid)],
+            KID: [MessageHandler(Filters.regex('^(kid_Dzianis|kid_Kiryl)$'), kid)],
             CLINIC: [
                 MessageHandler(Filters.regex('^(Klimczaka)$'), clinic)
                 ],
             SICK_OR_HEALTHY: [MessageHandler(Filters.regex('^(SICK|HEALTHY)$'), sick_or_healthy)],
+            CONFIRMATION: [CallbackQueryHandler(confirm)]
         },
         fallbacks=[CommandHandler('cancel', cancel)],
     )
@@ -229,14 +245,9 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler('cancel', cancel))
 
     updater.start_polling()
-    # Start the Bot
-    # updater.start_webhook(listen="0.0.0.0",
-                        #    port=int(PORT),
-                        #    url_path=os.getenv("TG_TOKEN"),
-                        #    webhook_url="https://rpitulia.ddns.net:8443/" + os.getenv("TG_TOKEN"))
 
-    # updater.bot.setWebhook()
-    ### 
+    logger.info("Luxmed Bot has just started.")
+
     updater.idle()
 
 
