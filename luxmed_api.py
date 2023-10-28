@@ -158,9 +158,11 @@ def get_terms(user, city_id: int, service_id: int, from_date: datetime, to_date:
         "searchDateFrom": from_date.strftime("%Y-%m-%d"),
         "searchDateTo": to_date.strftime("%Y-%m-%d"),
         "facilitiesIds": clinic_id,
-        "doctorsIds": doctor_id
+        "doctorsIds": doctor_id,
+        "delocalized": False
     }
     response = session.get(f"{__API_BASE_URL}/terms/index", headers=headers, params=params)
+
     __validate_response(response)
 
     return response.json()["termsForService"]["termsForDays"]
@@ -220,8 +222,9 @@ def __get_access_token(user) -> str:
 
     # __CONFIG = config_loader.read_configuration(user, ["username", "password", "language"])
 
-    authentication_body = {"username": os.getenv("DZIANIS_USER"),
-                           "password": os.getenv("DZIANIS_PASS"),
+    # FIXME: need proper user/pass selector here
+    authentication_body = {"username": os.getenv("KIRYL_USER"),
+                           "password": os.getenv("KIRYL_PASS"),
                            "grant_type": "password",
                            "account_id": str(uuid.uuid4())[:35],
                            "client_id": str(uuid.uuid4())
@@ -231,6 +234,7 @@ def __get_access_token(user) -> str:
                              data=authentication_body, proxies=PROXY)
 
     __validate_response(response)
+
     return response.json()["access_token"]
 
 
