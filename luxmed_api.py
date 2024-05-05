@@ -1,15 +1,12 @@
 import random
 import uuid
 import os
-from dotenv import load_dotenv
 from datetime import datetime
 from enum import Enum
 import utils
 import json
 import requests
 
-
-load_dotenv()
 
 
 PROXY = { 
@@ -26,27 +23,11 @@ class Language(Enum):
 class LuxmedApiException(Exception):
     pass
 
-__APP_VERSION = "4.19.0"
+__APP_VERSION = "4.29.0"
 __CUSTOM_USER_AGENT = f"Patient Portal; {__APP_VERSION}; {str(uuid.uuid4())}; Android; {str(random.randint(23, 29))};" \
                       f" {str(uuid.uuid4())}"
 __BASE_DOMAIN = "https://portalpacjenta.luxmed.pl"
 __API_BASE_URL = f"{__BASE_DOMAIN}/PatientPortal/NewPortal"
-
-
-def get_cities() -> []:
-    print("Retrieving cities from the Luxmed API...")
-    return __send_request_for_filters("/Dictionary/cities")
-
-
-def get_services() -> []:
-    print("Retrieving services from the Luxmed API...")
-    return __send_request_for_filters("/Dictionary/serviceVariantsGroups")
-
-
-def get_clinics_and_doctors(city_id: int, service_id: int) -> []:
-    print("Retrieving clinics and doctors from the Luxmed API...")
-    return __send_request_for_filters(
-        f"/Dictionary/facilitiesAndDoctors?cityId={city_id}&serviceVariantId={service_id}")
 
 
 def get_forgery_token(session):
@@ -67,10 +48,10 @@ def get_forgery_token(session):
     return response.json()["token"]
 
 
-def book_term(user, term) -> []:
+def book_term(user, password, term) -> []:
     print("Temporary locking term... %s", term["visits"][0])
 
-    session = __log_in(user)
+    session = __log_in(user, password)
 
     token = get_forgery_token(session)
 
@@ -138,11 +119,11 @@ def confirm_term(session, token, reservation_term) -> []:
     return response.json() ### change it
 
 
-def get_terms(user, city_id: int, service_id: int, from_date: datetime, to_date: datetime, language: Language,
+def get_terms(user, password,  city_id: int, service_id: int, from_date: datetime, to_date: datetime, language: Language,
               clinic_id: int = None, doctor_id: int = None) -> []:
     print("Getting terms for given search parameters...")
 
-    session = __log_in(user)
+    session = __log_in(user, password)
 
     headers = {
         "Accept": "application/json",
@@ -152,7 +133,8 @@ def get_terms(user, city_id: int, service_id: int, from_date: datetime, to_date:
         "x-requested-with": "XMLHttpRequest",
     }
     params = {
-        "cityId": city_id,
+        "searchPlace.id": city_id,
+        "searchPlace.name": "Warszawa",
         "serviceVariantId": service_id,
         "languageId": language.value,
         "searchDateFrom": from_date.strftime("%Y-%m-%d"),
@@ -161,6 +143,7 @@ def get_terms(user, city_id: int, service_id: int, from_date: datetime, to_date:
         "doctorsIds": doctor_id,
         "delocalized": False
     }
+
     response = session.get(f"{__API_BASE_URL}/terms/index", headers=headers, params=params)
 
     __validate_response(response)
@@ -168,21 +151,9 @@ def get_terms(user, city_id: int, service_id: int, from_date: datetime, to_date:
     return response.json()["termsForService"]["termsForDays"]
 
 
-def __send_request_for_filters(uri: str):
-    session = __log_in()
-    headers = {
-        "Accept": "application/json",
-        "accept-language": "pl",
-        "host": "portalpacjenta.luxmed.pl",
-        "Content-Type": "application/json",
-    }
-    response = session.get(f"{__API_BASE_URL}{uri}", headers=headers, proxies=PROXY)
-    __validate_response(response)
-    return response.json()
 
-
-def __log_in(user) -> requests.Session:
-    access_token = __get_access_token(user)
+def __log_in(user, password) -> requests.Session:
+    access_token = __get_access_token(user, password)
 
     session = requests.Session()
     session.proxies = PROXY
@@ -211,7 +182,7 @@ def __log_in(user) -> requests.Session:
     return session
 
 
-def __get_access_token(user) -> str:
+def __get_access_token(user, password) -> str:
     headers = {"Api-Version": "2.0",
                "accept-language": "pl",
                "Content-Type": "application/x-www-form-urlencoded",
@@ -220,11 +191,9 @@ def __get_access_token(user) -> str:
                "User-Agent": "okhttp/3.11.0",
                "Custom-User-Agent": __CUSTOM_USER_AGENT}
 
-    # __CONFIG = config_loader.read_configuration(user, ["username", "password", "language"])
-
     # FIXME: need proper user/pass selector here
-    authentication_body = {"username": os.getenv("KIRYL_USER"),
-                           "password": os.getenv("KIRYL_PASS"),
+    authentication_body = {"username": user,
+                           "password": password,
                            "grant_type": "password",
                            "account_id": str(uuid.uuid4())[:35],
                            "client_id": str(uuid.uuid4())

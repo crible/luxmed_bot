@@ -43,19 +43,22 @@ def get_doctors(city_id: int, service_id: int, clinic_id: int = None) -> [{}]:
     return doctors
 
 
-def get_available_terms(user, city_id: int, service_id: int, from_date: datetime, to_date: datetime, part_of_day: int,
+def get_available_terms(user, password, city_id: int, service_id: int, from_date: datetime, to_date: datetime, part_of_day: int,
                         language: Language, clinic_id: int = None, doctor_id: int = None) -> [{}]:
 
     ## TODO: Add catching LuxmedException here
-    result = luxmed_api.get_terms(user, city_id, service_id, from_date, to_date, language, clinic_id, doctor_id)
+    result = luxmed_api.get_terms(user, password, city_id, service_id, from_date, to_date, language, clinic_id, doctor_id)
+
     available_terms = [__parse_terms_for_day(terms_per_day) for terms_per_day in result]
+
     filtered_terms_by_dates = __filter_terms_by_dates(available_terms, from_date, to_date)
-    # return filtered_terms_by_dates
-    return __filter_terms_by_criteria(filtered_terms_by_dates, part_of_day, clinic_id, doctor_id)
+
+    return filtered_terms_by_dates
+    # return __filter_terms_by_criteria(filtered_terms_by_dates, part_of_day, clinic_id, doctor_id)
 
 
-def book_term(user, term) -> {}:
-    result = luxmed_api.book_term(user, term)
+def book_term(user, password, term) -> {}:
+    result = luxmed_api.book_term(user, password, term)
     logger.info("Term is temporary locked: %s", result)
 
     return result
