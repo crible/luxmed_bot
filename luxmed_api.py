@@ -3,10 +3,10 @@ import uuid
 import os
 from datetime import datetime
 from enum import Enum
-import utils
+from utils import convert_date_to_string, convert_string_to_date, convert_string_to_time, convert_time_to_string
 import json
 import requests
-
+import logging
 
 
 PROXY = { 
@@ -14,11 +14,9 @@ PROXY = {
     'http' : "http://" + os.getenv('PROXY_USER') + ":" + os.getenv("PROXY_PASS") + "@pl.smartproxy.com:20000",
 } 
 
-
 class Language(Enum):
     POLISH = 10
     ENGLISH = 11
-
 
 class LuxmedApiException(Exception):
     pass
@@ -28,6 +26,8 @@ __CUSTOM_USER_AGENT = f"Patient Portal; {__APP_VERSION}; {str(uuid.uuid4())}; An
                       f" {str(uuid.uuid4())}"
 __BASE_DOMAIN = "https://portalpacjenta.luxmed.pl"
 __API_BASE_URL = f"{__BASE_DOMAIN}/PatientPortal/NewPortal"
+
+logger = logging.getLogger(__name__)
 
 
 def get_forgery_token(session):
@@ -48,8 +48,8 @@ def get_forgery_token(session):
     return response.json()["token"]
 
 
-def book_term(user, password, term) -> []:
-    print("Temporary locking term... %s", term["visits"][0])
+def book_appointment(user, password, appointment):
+    print("Temporary locking term... %s", appointment)
 
     session = __log_in(user, password)
 
@@ -65,16 +65,16 @@ def book_term(user, password, term) -> []:
     }
 
     params_lock = {
-        "date": utils.convert_date_to_string(term["date"]),
-        "timeFrom": utils.convert_time_to_string(term["visits"][0]["timeFrom"]),
-        "timeTo": utils.convert_time_to_string(term["visits"][0]["timeTo"]),
-        "roomId": term["visits"][0]["roomId"],
-        "serviceVariantId": term["visits"][0]["serviceId"],
-        "facilityId": term["visits"][0]["facilityId"],
-        "facilityName": term["visits"][0]["facilityName"],
-        "scheduleId": term["visits"][0]["scheduleId"],
-        "doctorId": term["visits"][0]["doctorId"],
-        "doctor": term["visits"][0]["doctor"]
+        "date": convert_date_to_string(appointment["Date"]),
+        "timeFrom": convert_time_to_string(convert_string_to_time(appointment["AppointmentDate"])),
+        "timeTo": convert_time_to_string(appointment["dateTimeTo"]),
+        "roomId": appointment["roomId"],
+        "serviceVariantId": appointment["ServiceId"],
+        "facilityId": appointment["facilityId"],
+        "facilityName": appointment["ClinicPublicName"],
+        "scheduleId": appointment["scheduleId"],
+        "doctorId": appointment["doctorId"],
+        "doctor": appointment["doctor"]
     }
 
     response_lock = session.post(f"{__API_BASE_URL}/reservation/lockterm", headers=headers, json=params_lock)
@@ -83,22 +83,30 @@ def book_term(user, password, term) -> []:
 
     temp_reservation_id = response_lock.json()["value"]["temporaryReservationId"]
 
+    if not temp_reservation_id:
+        return None
+
     ## REFACTOR ME
     params_confirm = {
-        "date": utils.convert_date_to_string(term["date"]),
-        "serviceVariantId": term["visits"][0]["serviceId"],
-        "doctorId": term["visits"][0]["doctorId"],
-        "facilityId": term["visits"][0]["facilityId"],
-        "roomId": term["visits"][0]["roomId"],
+        "date": convert_date_to_string(appointment["Date"]),
+        "serviceVariantId": appointment["ServiceId"],
+        "doctorId": appointment["doctorId"],
+        "facilityId": appointment["facilityId"],
         "temporaryReservationId": temp_reservation_id,
-        "timeFrom": utils.convert_time_to_string(term["visits"][0]["timeFrom"]),
-        "scheduleId": term["visits"][0]["scheduleId"],
+        "timeFrom": convert_time_to_string(convert_string_to_time(appointment["AppointmentDate"])),
+        "scheduleId": appointment["scheduleId"],
         "valuation": response_lock.json()["value"]["valuations"][0]
     }
 
     response_confirm = confirm_term(session, token, params_confirm)
 
-    return response_confirm 
+    if response_confirm["errors"]:
+        logger.error(response_confirm["errors"][0])
+        response_lock = session.post(f"{__API_BASE_URL}/reservation/releaseterm?reservationId={temp_reservation_id}", headers=headers, json={})
+        __validate_response(response_lock)
+        return None
+
+    return response_confirm
 
 
 def confirm_term(session, token, reservation_term) -> []:
@@ -148,7 +156,7 @@ def get_terms(user, password,  city_id: int, service_id: int, from_date: datetim
 
     __validate_response(response)
 
-    return response.json()["termsForService"]["termsForDays"]
+    return response #.json()["termsForService"]["termsForDays"]
 
 
 

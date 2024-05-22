@@ -4,6 +4,9 @@
 #
 #    pip-compile requirements.in
 #
+coloredlogs==15.0.1
+schedule==1.2.0
+
 apscheduler==3.6.3
     # via python-telegram-bot
 cachetools==4.2.2
@@ -16,7 +19,7 @@ charset-normalizer==2.1.1
     # via requests
 idna==3.4
     # via requests
-python-telegram-bot==13.15
+telegram_send
     # via -r requirements.in
 pytz==2023.3
     # via
@@ -37,6 +40,5 @@ tzlocal==4.3
     # via apscheduler
 urllib3==1.26.15
     # via requests
-python-dotenv==1.0.0
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
