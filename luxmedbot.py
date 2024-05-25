@@ -50,8 +50,8 @@ doctors = {
 }
 
 
-parsed_from_date = date(2024, 5, 13)
-parsed_to_date = date(2024, 5, 24)
+parsed_from_date = date(2024, 5, 27)
+parsed_to_date = date(2024, 5, 31)
 
 parsed_language = Language.POLISH
 

@@ -21,7 +21,7 @@ class Language(Enum):
 class LuxmedApiException(Exception):
     pass
 
-__APP_VERSION = "4.29.0"
+__APP_VERSION = "4.31.0"
 __CUSTOM_USER_AGENT = f"Patient Portal; {__APP_VERSION}; {str(uuid.uuid4())}; Android; {str(random.randint(23, 29))};" \
                       f" {str(uuid.uuid4())}"
 __BASE_DOMAIN = "https://portalpacjenta.luxmed.pl"
@@ -30,7 +30,7 @@ __API_BASE_URL = f"{__BASE_DOMAIN}/PatientPortal/NewPortal"
 logger = logging.getLogger(__name__)
 
 
-def get_forgery_token(session):
+def get_forgery_token(session, token):
     print("Getting forgery token...")
 
     headers = {
@@ -39,6 +39,7 @@ def get_forgery_token(session):
         "host": "portalpacjenta.luxmed.pl",
         "Content-Type": "application/json",
         "x-requested-with": "XMLHttpRequest",
+        "Authorization": f"Bearer {token}"
     }
 
     response = session.get(f"{__API_BASE_URL}/security/getforgerytoken", headers=headers)
@@ -131,15 +132,21 @@ def get_terms(user, password,  city_id: int, service_id: int, from_date: datetim
               clinic_id: int = None, doctor_id: int = None) -> []:
     print("Getting terms for given search parameters...")
 
-    session = __log_in(user, password)
+    access_token, session = __log_in(user, password) # do I need this line?
 
+    # access_token = __get_access_token(user, password)
+    token  = get_forgery_token(session, access_token)
+   
     headers = {
         "Accept": "application/json",
         "accept-language": "pl",
         "host": "portalpacjenta.luxmed.pl",
         "Content-Type": "application/json",
         "x-requested-with": "XMLHttpRequest",
+        "Authorization": f"Bearer {access_token}",
+        "xsrf-token": token
     }
+
     params = {
         "searchPlace.id": city_id,
         "searchPlace.name": "Warszawa",
@@ -161,14 +168,14 @@ def get_terms(user, password,  city_id: int, service_id: int, from_date: datetim
 
 
 def __log_in(user, password) -> requests.Session:
-    access_token = __get_access_token(user, password)
+    # access_token = __get_access_token(user, password)
 
     session = requests.Session()
     session.proxies = PROXY
 
 
     headers = {
-        "authorization": access_token,
+        # "authorization": access_token,
         "accept-language": "pl",
         "upgrade-insecure-requests": "1",
         "host": "portalpacjenta.luxmed.pl",
@@ -177,17 +184,15 @@ def __log_in(user, password) -> requests.Session:
         "Origin": __BASE_DOMAIN
     }
     params = {
-        "app": "search",
-        "client": 3,
-        "paymentSupported": "true",
-        "lang": "pl"
+        "login": user,
+        "password": password,
     }
-    response = session.get(f"{__BASE_DOMAIN}/PatientPortal/Account/LogInToApp", headers=headers, params=params)
+    response = session.get(f"{__BASE_DOMAIN}/PatientPortal/Account/LogIn", headers=headers, params=params)
 
     if response.status_code != 200:
         raise LuxmedApiException("Unexpected response code, cannot log in")
 
-    return session
+    return response.json()["Token"], session
 
 
 def __get_access_token(user, password) -> str:
@@ -199,7 +204,6 @@ def __get_access_token(user, password) -> str:
                "User-Agent": "okhttp/3.11.0",
                "Custom-User-Agent": __CUSTOM_USER_AGENT}
 
-    # FIXME: need proper user/pass selector here
     authentication_body = {"username": user,
                            "password": password,
                            "grant_type": "password",
