@@ -28,10 +28,6 @@ from telegram_send import send as t_send
 # Add pobranie krwi
 # Add emergency mode for 1 Sierpnia 8 
 
-
-# FOR ANY CLINIC IN WARSAW DON't SHOW FAV DOCTOR
-# MAKE AT FIRST ASKING FOR DOCTOR TYPE, THAN FAVOURITE OR NOT, than only show places.
-
 # Enable logging
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
@@ -40,29 +36,23 @@ logging.basicConfig(
 coloredlogs.install(level="INFO")
 logger = logging.getLogger(__name__)
 
-doctors = {
-    'Pediatr_healthy': {
-        'fav': {'id': 40404, 'name': 'MAŁGORZATA BIAŁA-GÓRNIAK'}
-    },
-    'Stomatolog': {
-        'fav': {'id': 41195, 'name': 'Olga Marczuk'}
-    }
-}
 
-
-parsed_from_date = date(2024, 5, 27)
-parsed_to_date = date(2024, 5, 31)
+parsed_from_date = date(2024, 6, 3)
+parsed_to_date = date(2024, 6, 7)
 
 parsed_language = Language.POLISH
 
 def check():
     try:
-        user = os.getenv("KIRYL_USERNAME")
-        password = os.getenv("KIRYL_PASS")
+        user = os.getenv("LUXMED_USERNAME")
+        password = os.getenv("LUXMED_PASS")
+        doctorId = os.getenv("LUXMED_DOCTOR_ID")
+        locationId = os.getenv("LUXMED_LOCATION_ID")
+        serviceId = os.getenv("LUXMED_SERVICE_ID")
 
-        appointments = booking_service.get_available_terms(user, password, 1, 8914, parsed_from_date,
+        appointments = booking_service.get_available_terms(user, password, 1, serviceId, parsed_from_date,
             parsed_to_date, 0,
-            parsed_language, 13, 41195)
+            parsed_language, locationId, doctorId)
         
         if not appointments:
             logger.info("No appointments found. Trying again...")
